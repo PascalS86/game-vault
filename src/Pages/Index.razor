@@ -1,0 +1,191 @@
+﻿@page "/"
+@page "/games"
+@using System.Linq
+@using Csandra.game_vault.wasm.App.Data
+@using Radzen
+@inject GameVaultDataService gameService
+@inject SessionService session
+@inject Radzen.DialogService dialogService
+@inject Microsoft.AspNetCore.Components.NavigationManager UriHelper
+
+
+<div class="signin-content p-4 py-5"> 
+    <div class="row mb-4">
+            <div class="col-sm">
+                <h2>
+                    <span class="small text-uppercase text-muted d-block">Übersicht</span>
+                </h2>
+            </div>
+            
+            @if(session.CanChange){
+            <div class="col-sm text-sm-right">
+
+                <RadzenButton Click="@((args) => New(args, new GameVaultData()))" Text="Neu" Icon="add" Style="margin-bottom: 20px; width: 150px">
+
+                </RadzenButton>
+
+            </div>
+            }
+        </div>
+
+    @if(games != null)
+    {
+
+    <div class="dashboard">
+        <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                    <h3 >Übersicht</h3>
+                    
+                    <div class="col-sm text-sm-right">
+                        <RadzenTextBox  Placeholder="Suche..." @bind-Value="@Search" Change="@(args => Search = args)"  Style="width: 62%"/>                                                        
+
+                        <RadzenButton Click="@((args) => BuildPattern())" Text="Suche" Icon="search" Style="float:right;">
+
+                        </RadzenButton>
+
+                    </div>
+                    </div>
+                    <div class="card-body">
+                            <h3 class="card-header">Alle Spiele</h3>
+                            <div class="all-issues">
+                                <RadzenDataList WrapItems="true" AllowPaging="true" Data="@gamelist" TItem="GameVaultData">
+                                    <Template Context="game">
+                                        <RadzenCard Style="width:300px;">
+                                            <div class="row" >
+                                                <div class="col-md-6">
+                                                    <div >Game:</div>
+                                                    <b  >@game.Spieltitel</b>
+                                                    <div style="margin-top:20px;">Komplexität:</div>
+                                                    <b>@if(game.Komplexitaet > 0)
+                                                        {
+                                                            <span>@game.Komplexitaet</span>
+                                                        
+                                                    }
+                                                    else{
+                                                        <span  >Keine Bewertung</span>
+                                                    }</b>
+
+                                                    <br />
+                                                    <RadzenImage Path="@game.PictureUri" Style="width:100px;" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div  >Spielerzahl:</div>
+                                                    <b  >@game.Spielerzahl</b>
+                                                    <div style="margin-top:20px;">Mechanik:</div>
+                                                    <b  >@(game.Mechanik)</b>
+                                                    <div style="margin-top:20px;">Dauer:</div>
+                                                    <b  >@game.Dauer</b>
+                                                </div>
+                                            </div>
+                                            @if(session.CanChange){
+                                           
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <RadzenButton Click="@((args) => Edit(args, game))" Text="Bearbeiten" Icon="edit" Style="margin-bottom: 20px; width: 150px" />
+                                                </div>
+                                            </div>
+                                            }
+
+                                        </RadzenCard>
+                                    </Template>
+                                </RadzenDataList>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else{
+        <div class="loader"></div>
+    }
+    
+</div>
+
+@code{
+    string Search {get;set;}
+    string rest = "";
+
+    IEnumerable<GameVaultData> gamelist {get=> games.Where(c=> IsValid(c));}
+
+    List<GameVaultData> games = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        session.SessionDataChanged += (s,e)=> {
+            StateHasChanged();
+            UriHelper.NavigateTo("/", !session.IsLoggedIn);
+            };
+        
+        string currUrl = UriHelper.Uri;
+        
+		if(!session.IsLoggedIn && !currUrl.EndsWith("/games")){
+            UriHelper.NavigateTo("/signin");
+            return;
+        }
+        games = await gameService.GetGames();
+        
+
+        dialogService.OnOpen += Open;
+
+        dialogService.OnClose += Close;
+        Console.WriteLine(games.Count);
+    }
+
+    async void BuildPattern(){
+        rest = Search;
+        Console.WriteLine(gamelist.Count());
+        await InvokeAsync(()=> StateHasChanged());
+    }
+
+    bool IsValid(GameVaultData data){
+        if(data == null || rest == null ||rest == "")
+            return true;
+        else{
+            return (data.Spielerzahl??"").Contains(rest) || (!string.IsNullOrEmpty(data.Spielerzahl) && rest.Contains((data.Spielerzahl??"")))
+                || (data.Spieltitel??"").Contains(rest) || (!string.IsNullOrEmpty(data.Spieltitel) && rest.Contains((data.Spieltitel??"")))
+                || data.Komplexitaet.ToString().Contains(rest) ||rest.Contains(data.Komplexitaet.ToString())
+                || (data.Mechanik??"").Contains(rest) || (!string.IsNullOrEmpty(data.Mechanik) && rest.Contains((data.Mechanik??"")));
+        }
+    }
+
+    void Edit (MouseEventArgs args, GameVaultData data){
+        dialogService.Open<Editor>($"{data.Spieltitel}",
+            new Dictionary<string, object>() { { "game", data } },
+            new DialogOptions(){ Width = "700px", Height = "630px", Left = "30%", Top = "20%" });
+    }
+
+    void New (MouseEventArgs args, GameVaultData data){
+        games.Add(data);
+        dialogService.Open<Editor>($"Neuer game",
+            new Dictionary<string, object>() { { "game", data } },
+            new DialogOptions(){ Width = "700px", Height = "630px", Left = "30%", Top = "20%" });
+    }
+    
+
+    async void Open(string title, Type type, Dictionary<string, object> parameters, DialogOptions options)
+    {
+        await InvokeAsync(() => { StateHasChanged(); });
+    }
+
+
+
+    async void Close(dynamic result)
+    {
+        try{
+            for(int i = 0; i < games.Count; i++){
+                if(games[i].Spieltitel == ((GameVaultData)result).Spieltitel){
+                    games[i] = ((GameVaultData)result);
+                    break;
+                }
+            }
+            gameService.Save((GameVaultData)result,session.GetIdentifier());
+            
+            await InvokeAsync(() => { StateHasChanged(); });
+        }
+        catch{
+
+        }
+        finally{}
+    }
+}

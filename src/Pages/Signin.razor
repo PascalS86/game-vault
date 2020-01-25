@@ -1,0 +1,23 @@
+@page "/signin"
+@using Csandra.game_vault.wasm.App.Data
+@inject SessionService session
+
+<div class="signin-content">
+    <div class="jumbotron jumbotron-odi-hero" >
+    <div class="jumbotron-overlay ">
+        <div class="jumbotron-padding  text-center">
+        <h1 class="display-4">Willkommen im Game Vault.</h1>
+            <p>
+                Klicked auf Sign In um einen Blick in die Vault zu werfen <br />
+                <a href="" @onclick=session.SignIn class="btn btn-lg btn-primary btn-circle btn-overlay my-4 mr-3">Sign In</a>
+            </p>
+        </div>
+        </div>
+    </div>
+    <div class="fixed-bottom" style="right: 10px;bottom: 10px;left: calc(-130px + 100vw);">
+        <a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" 
+        href="@("https://www.pexels.com/de-de/foto/armbanduhr-drinnen-dunkel-hand-1111597/")" 
+        target="_blank" rel="noopener noreferrer" title="Foto von fotografierende von Pexels">
+        Foto von fotografierende von Pexels</a>
+    </div>
+</div>

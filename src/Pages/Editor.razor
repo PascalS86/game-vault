@@ -1,0 +1,58 @@
+@page "/editor/{game}"
+
+@using Csandra.game_vault.wasm.App.Data
+@inject GameVaultDataService gameService
+
+@inject Radzen.DialogService dialogService
+
+<RadzenCard>
+    <div class="row" >
+        <div class="col-md-6">
+            <div >Game:</div>
+            <b  >
+                <RadzenTextBox @bind-Value="@game.Spieltitel" Placeholder="Titel..." Change="@(args => game.Spieltitel = args)" /></b>
+            <div style="margin-top:20px;">Komplexität:</div>
+            <b><RadzenNumeric TItem="int" Placeholder="game bewerten..." @bind-Value="@game.Komplexitaet" Min="0" Max="10"  /></b>
+
+            <br />
+            <RadzenImage Path="@game.PictureUri" Style="width:100px;" />
+            <br />
+            <b>
+                <RadzenTextBox  Placeholder="Bildquelle..." @bind-Value="@game.PictureUri" Change="@(args => game.PictureUri = args)" />                    
+            </b>
+        </div>
+        <div class="col-md-6">
+            <div  >Spielerzahl:</div>
+            <b  >
+                <RadzenTextBox  Placeholder="Spielerzahl..." @bind-Value="@game.Spielerzahl" Change="@(args => game.Spielerzahl = args)" /></b>
+            <div style="margin-top:20px;">Mechanik:</div>
+            <b  >
+                <RadzenTextBox  Placeholder="Mechanik..." @bind-Value="@game.Mechanik" Change="@(args => {game.Mechanik = args;  })" /></b>
+            <div style="margin-top:20px;">Dauer:</div>
+            <b  > <RadzenTextBox  Placeholder="Dauer..." @bind-Value="@game.Dauer" Change="@(args => game.Dauer = args)" /></b>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            
+        <RadzenButton Click="@((args) => dialogService.Close(true))" Text="OK" Style="margin-bottom: 10px; width: 150px" />
+        <RadzenButton Click="@((args) => dialogService.Close(false))" ButtonStyle="ButtonStyle.Secondary" Text="Cancel" Style="margin-bottom: 10px; width: 150px" />
+        </div>
+    </div>
+
+</RadzenCard>
+
+
+@code {
+    [Parameter] public GameVaultData game { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("dd");
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}
