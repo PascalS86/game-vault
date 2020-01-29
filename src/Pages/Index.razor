@@ -9,7 +9,7 @@
 @inject Microsoft.AspNetCore.Components.NavigationManager UriHelper
 
 
-<div class="signin-content p-4 py-5"> 
+<div class="p-4 py-5"> 
     <div class="row mb-4">
             <div class="col-sm">
                 <h2>
@@ -37,10 +37,10 @@
                     <div class="card-header">
                     <h3 >Übersicht</h3>
                     
-                    <div class="col-sm text-sm-right">
-                        <RadzenTextBox  Placeholder="Suche..." @bind-Value="@Search" Change="@(args => Search = args)"  Style="width: 62%"/>                                                        
+                    <div class="row text-right">
+                        <RadzenTextBox  Placeholder="Suche..." @bind-Value="@Search" Change="@(args => Search = args)"  class="col-10"/>                                                        
 
-                        <RadzenButton Click="@((args) => BuildPattern())" Text="Suche" Icon="search" Style="float:right;">
+                        <RadzenButton Click="@((args) => BuildPattern())" Text="Suche" Icon="search" class="col-2">
 
                         </RadzenButton>
 
@@ -97,8 +97,12 @@
         </div>
     }
     else{
-        <div class="loader"></div>
-    }
+        <div class="loader ">
+            <div class="col-md-6 offset-md-3 col-md-6 offset-md-3 text-center" style="padding-top:33%">
+                <h1>Lade Comics</h1>
+                <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+            </div>
+        </div>    }
     
 </div>
 
